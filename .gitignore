@@ -1,0 +1,21 @@
+# ignore all obj and bin folders (even in subdirectories)
+*.DS_Store
+*.pyc
+build
+Privacy-preserving
+AverageFill
+tools
+data/dataset#2/rtdata.txt
+data/dataset#2/tpdata.txt
+Summary.xlsx
+
+
+# IntelliJ Idea
+.idea/
+out/
+*.ipr
+*.iws
+*.iml
+*/bin
+**/bin
+classes/
