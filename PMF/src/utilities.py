@@ -26,8 +26,8 @@ def initConfig(para):
               'logFile': os.path.basename(sys.argv[0]) + '.log'}
 
     # delete old log file
-    if os.path.exists(config['logFile']):
-        os.remove(config['logFile'])
+    # if os.path.exists(config['logFile']):
+    #     os.remove(config['logFile'])
     # add result folder
     if not os.path.exists(para['outPath']):
         os.makedirs(para['outPath'])

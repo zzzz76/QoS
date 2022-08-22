@@ -46,27 +46,30 @@ para = {'dataType': 'rt',  # set the dataType as 'rt' or 'tp'
 initConfig(para)
 #########################################################
 
+def main():
+    startTime = time.clock()  # start timing
+    logger.info('==============================================')
+    logger.info('PMF: Probabilistic Matrix Factorization.')
 
-startTime = time.clock()  # start timing
-logger.info('==============================================')
-logger.info('PMF: Probabilistic Matrix Factorization.')
+    # load the dataset
+    dataMatrix = dataloader.load(para)
+    logger.info('Loading data done.')
 
-# load the dataset
-dataMatrix = dataloader.load(para)
-logger.info('Loading data done.')
+    # run for each density
+    if para['parallelMode']:  # run on multiple processes
+        pool = multiprocessing.Pool()
+        for density in para['density']:
+            pool.apply_async(evaluator.execute, (dataMatrix, density, para))
+        pool.close()
+        pool.join()
+    else:  # run on single processes
+        for density in para['density']:
+            evaluator.execute(dataMatrix, density, para)
 
-# run for each density
-if para['parallelMode']:  # run on multiple processes
-    pool = multiprocessing.Pool()
-    for density in para['density']:
-        pool.apply_async(evaluator.execute, (dataMatrix, density, para))
-    pool.close()
-    pool.join()
-else:  # run on single processes
-    for density in para['density']:
-        evaluator.execute(dataMatrix, density, para)
+    logger.info(time.strftime('All done. Total running time: %d-th day - %Hhour - %Mmin - %Ssec.',
+                              time.gmtime(time.clock() - startTime)))
+    logger.info('==============================================')
+    sys.path.remove('src')
 
-logger.info(time.strftime('All done. Total running time: %d-th day - %Hhour - %Mmin - %Ssec.',
-                          time.gmtime(time.clock() - startTime)))
-logger.info('==============================================')
-sys.path.remove('src')
+if __name__ == '__main__':
+    main()
