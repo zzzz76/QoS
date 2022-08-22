@@ -18,21 +18,19 @@ print('Build extension modules...')
 print('==============================================')
 
 ext_modules = [Extension('core',
-				['src/core/core.pyx', 
-				'src/core/PMF.cpp'],
-				language='c++',
-				include_dirs=[numpy.get_include()],
-                extra_compile_args=["-O2"]
-              )]
+                         ['src/core/core.pyx',
+                          'src/core/PMF.cpp'],
+                         language='c++',
+                         include_dirs=[numpy.get_include()],
+                         extra_compile_args=["-O2"]
+                         )]
 
 setup(
-	name = 'Extended Cython module',
-	cmdclass = {'build_ext': build_ext},
-	ext_modules = ext_modules
+    name='Extended Cython module',
+    cmdclass={'build_ext': build_ext},
+    ext_modules=ext_modules
 )
 
-shutil.move('core.so', 'src/core.so')
+shutil.move('core.pyd', 'src/core.pyd')
 print('==============================================')
 print('Build done.\n')
-
-

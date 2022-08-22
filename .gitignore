@@ -19,3 +19,8 @@ out/
 */bin
 **/bin
 classes/
+
+# ignore all result and log
+*.log
+result/
+build/
