@@ -19,8 +19,10 @@ out/
 */bin
 **/bin
 classes/
+*.pyd
 
 # ignore all result and log
 *.log
-result/
-build/
+*/result
+*/build
+
