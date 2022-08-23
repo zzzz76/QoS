@@ -7,6 +7,7 @@
 
 import numpy as np
 from utilities import *
+import xlrd
 
 
 ########################################################
@@ -19,7 +20,23 @@ def load(para):
     dataMatrix = preprocess(dataMatrix, para)
     return dataMatrix
 
+def loadUserList(para):
+    datafile = para['dataPath'] + 'userlist.xlsx'
+    logger.info('Load user list: %s' % datafile)
 
+    book = xlrd.open_workbook(datafile)
+    sheet = book.sheet_by_index(0)
+    regions = sheet.col_values(2, 1)
+    return np.array(regions)
+
+def loadServiceList(para):
+    datafile = para['dataPath'] + 'wslist.xlsx'
+    logger.info('Load service list: %s' % datafile)
+
+    book = xlrd.open_workbook(datafile)
+    sheet = book.sheet_by_index(0)
+    regions = sheet.col_values(2, 1)
+    return np.array(regions)
 ########################################################
 
 

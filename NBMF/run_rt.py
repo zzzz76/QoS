@@ -54,6 +54,10 @@ def main():
     dataMatrix = dataloader.load(para)
     logger.info('Loading data done.')
 
+    # load user information and service information
+    userRegions = dataloader.loadUserList(para)
+    serviceRegions = dataloader.loadServiceList(para)
+
     # run for each density
     if para['parallelMode']:  # run on multiple processes
         pool = multiprocessing.Pool()
