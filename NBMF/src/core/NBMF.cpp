@@ -30,7 +30,7 @@ using namespace std;
  * 初始化的服务矩阵
 ********************************************************/
 void NBMF(double *removedData, double *predData, int numUser, int numService, int dim,
-          double lmda, int maxIter, double etaInit, double *bu, double *bs, double *Udata, double *Sdata) {
+          double lmda, int maxIter, double etaInit, double *bu, double *bs, double *Udata, double *Sdata, bool debugMode) {
     // --- transfer the 1D pointer to 2D array pointer
     double **removedMatrix = vector2Matrix(removedData, numUser, numService);
     double **predMatrix = vector2Matrix(predData, numUser, numService);
@@ -56,14 +56,15 @@ void NBMF(double *removedData, double *predData, int numUser, int numService, in
     }
     miu /= cnt;
 
-    // --- inital predict
-    predict(miu, bu, bs, U, S, removedMatrix, predMatrix, numUser, numService, dim);
-    // --- inital loss value
-    double lossValue = loss(bu, bs, U, S, removedMatrix, predMatrix, lmda, numUser, numService, dim);
-
     // --- iterate by standard gradient descent algorithm
+    double lossValue;
     int iter, i, j, k;
     for (iter = 0; iter < maxIter; iter++) {
+        // update predict
+        predict(false, miu, bu, bs, U, S, removedMatrix, predMatrix, numUser, numService, dim);
+        // update loss value
+        lossValue = loss(bu, bs, U, S, removedMatrix, predMatrix, lmda, numUser, numService, dim);
+
         // update gradients
         gradLoss(bu, bs, U, S, removedMatrix, predMatrix,
                  gradbu, gradbs, gradU, gradS, lmda, numUser, numService, dim);
@@ -92,13 +93,10 @@ void NBMF(double *removedData, double *predData, int numUser, int numService, in
         for (j = 0; j < numService; j++) {
             bs[j] -= eta * gradbs[j];
         }
-
-        // update predict
-        predict(miu, bu, bs, U, S, removedMatrix, predMatrix, numUser, numService, dim);
-        // update loss value
-        lossValue = loss(bu, bs, U, S, removedMatrix, predMatrix, lmda, numUser, numService, dim);
         //cout << lossValue << endl;
     }
+
+    predict(true, miu, bu, bs, U, S, removedMatrix, predMatrix, numUser, numService, dim);
 
     delete2DMatrix(gradU);
     delete2DMatrix(gradS);
@@ -244,7 +242,7 @@ double linesearch(double miu, double *bu, double *bs, double **U, double **S,
             bs1[j] = bs[j] - eta * gradbs[j];
         }
 
-        predict(miu, bu1, bs1, U1, S1, removedMatrix, predMatrix1, numUser, numService, dim);
+        predict(false, miu, bu1, bs1, U1, S1, removedMatrix, predMatrix1, numUser, numService, dim);
         lossValue = loss(bu1, bs1, U1, S1, removedMatrix, predMatrix1, lmda, numUser, numService, dim);
 
         if (lossValue <= lastLossValue)
@@ -262,13 +260,14 @@ double linesearch(double miu, double *bu, double *bs, double **U, double **S,
 }
 
 
-void predict(double miu, double *bu, double *bs, double **U, double **S,
+void predict(bool flag, double miu, double *bu, double *bs, double **U, double **S,
              double **removedMatrix, double **predMatrix, int numUser, int numService, int dim) {
     int i, j;
     for (i = 0; i < numUser; i++) {
         for (j = 0; j < numService; j++) {
-            if (removedMatrix[i][j] > eps) {
-                predMatrix[i][j] = dotProduct(U[i], S[j], dim) + miu + bu[i] + bs[j];
+            predMatrix[i][j] = 0;
+            if (flag || removedMatrix[i][j] > eps) {
+                predMatrix[i][j] += dotProduct(U[i], S[j], dim) + miu + bu[i] + bs[j];
             }
         }
     }

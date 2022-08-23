@@ -7,7 +7,7 @@
 
 /* Perform the core approach of NBMF */
 void NBMF(double *removedData, double *predData, int numUser, int numService, int dim,
-          double lmda, int maxIter, double etaInit, double *bu, double *bs, double *Udata, double *Sdata);
+          double lmda, int maxIter, double etaInit, double *bu, double *bs, double *Udata, double *Sdata, bool debugMode);
 
 /* Compute the loss value of NBMF */
 double loss(double *bu, double *bs, double **U, double **S,
@@ -26,7 +26,7 @@ double linesearch(double miu, double *bu, double *bs, double **U, double **S,
                   double etaInit, double lmda, int numUser, int numService, int dim);
 
 /* Compute predMatrix */
-void predict(double miu, double *bu, double *bs, double **U, double **S,
+void predict(bool flag, double miu, double *bu, double *bs, double **U, double **S,
              double **removedMatrix, double **predMatrix, int numUser, int numService, int dim);
 
 /* Transform a vector into a matrix */

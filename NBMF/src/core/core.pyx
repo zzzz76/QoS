@@ -8,7 +8,7 @@ import time
 import numpy as np
 from utilities import *
 cimport numpy as np  # import C-API
-
+from libcpp cimport bool
 
 #########################################################
 # Make declarations on functions from cpp file
@@ -16,7 +16,7 @@ cimport numpy as np  # import C-API
 cdef extern from "NBMF.h":
     void NBMF(double *removedData, double *predData, int numUser, int numService,
               int dim, double lmda, int maxIter, double etaInit,
-              double *bu, double *bs, double *Udata, double *Sdata)
+              double *bu, double *bs, double *Udata, double *Sdata, bool debugMode)
 #########################################################
 
 
@@ -31,6 +31,7 @@ def predict(removedMatrix, para):
     cdef double lmda = para['lambda']
     cdef int maxIter = para['maxIter']
     cdef double etaInit = para['etaInit']
+    cdef bool debugMode = para['debugMode']
 
     # initialization
     cdef np.ndarray[double, ndim=2, mode='c'] U = np.random.rand(numUser, dim)
@@ -54,7 +55,8 @@ def predict(removedMatrix, para):
         <double *> bu.data,
         <double *> bs.data,
         <double *> U.data,
-        <double *> S.data
+        <double *> S.data,
+        debugMode
     )
 
     return predMatrix
