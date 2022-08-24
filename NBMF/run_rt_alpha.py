@@ -26,15 +26,15 @@ import dataloader
 #
 para = {'dataType': 'rt',  # set the dataType as 'rt' or 'tp'
         'dataPath': '../data/dataset1/',
-        'outPath': 'result/30/',
+        'outPath': 'result/alpha/',
         'metrics': ['MAE', 'NMAE', 'RMSE', 'MRE', 'NPRE',
                     ('NDCG', [1, 5, 10, 20, 50, 100])],  # delete where appropriate
-        'density': list(np.arange(0.05, 0.31, 0.05)),  # matrix density
+        'density': list(np.arange(0.05, 0.16, 0.05)),  # matrix density
         'rounds': 3,  # how many runs are performed at each matrix density
         'dimension': 10,  # dimenisionality of the latent factors
         'etaInit': 0.01,  # inital learning rate. We use line search
         # to find the best eta at each iteration
-        'lambda': 30,  # regularization parameter
+        'lambda': 20,  # regularization parameter
         'maxIter': 300,  # the max iterations
         'alpha': 0.2,
         'saveTimeInfo': False,  # whether to keep track of the running time
@@ -68,7 +68,10 @@ def main():
         pool.join()
     else:  # run on single processes
         for density in para['density']:
-            evaluator.execute(dataMatrix, density, userRegions, serviceRegions, para)
+            for alp in np.arange(0, 1, 0.1):
+                params = para
+                params['alpha'] = alp
+                evaluator.execute(dataMatrix, density, userRegions, serviceRegions, params)
 
     logger.info(time.strftime('All done. Total running time: %d-th day - %Hhour - %Mmin - %Ssec.',
                               time.gmtime(time.clock() - startTime)))
