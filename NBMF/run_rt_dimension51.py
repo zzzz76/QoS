@@ -26,10 +26,10 @@ import dataloader
 #
 para = {'dataType': 'rt',  # set the dataType as 'rt' or 'tp'
         'dataPath': '../data/dataset1/',
-        'outPath': 'result/',
+        'outPath': 'result/dimension/',
         'metrics': ['MAE', 'NMAE', 'RMSE', 'MRE', 'NPRE',
                     ('NDCG', [1, 5, 10, 20, 50, 100])],  # delete where appropriate
-        'density': list(np.arange(0.05, 0.21, 0.05)),  # matrix density
+        'density': list(np.arange(0.1, 0.11, 0.05)),  # matrix density
         'rounds': 8,  # how many runs are performed at each matrix density
         'dimension': 10,  # dimenisionality of the latent factors
         'etaInit': 0.01,  # inital learning rate. We use line search
@@ -68,7 +68,10 @@ def main():
         pool.join()
     else:  # run on single processes
         for density in para['density']:
-            evaluator.execute(dataMatrix, density, userRegions, serviceRegions, para)
+            for dms in np.arange(1, 6, 4):
+                params = para
+                params['dimension'] = dms
+                evaluator.execute(dataMatrix, density, userRegions, serviceRegions, params)
 
     logger.info(time.strftime('All done. Total running time: %d-th day - %Hhour - %Mmin - %Ssec.',
                               time.gmtime(time.clock() - startTime)))
