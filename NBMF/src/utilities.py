@@ -9,6 +9,7 @@
 import os, sys, time
 import numpy as np
 import logging
+import matplotlib.pyplot as plt
 
 ## global
 logger = logging.getLogger('logger')
@@ -93,3 +94,15 @@ def saveResult(outfile, result, timeinfo, para):
         np.savetxt(fileID, np.matrix(timeinfo), fmt='%.4f')
         fileID.close()
 ########################################################
+
+def curve(costs, title="Convergence curve"):
+    """
+    show the cost value trend
+    :param costs: cost value list
+    """
+    x = range(len(costs))
+    plt.plot(x, costs, color='r', linewidth=3)
+    plt.title(title)
+    plt.xlabel("iter")
+    plt.ylabel("loss")
+    plt.show()

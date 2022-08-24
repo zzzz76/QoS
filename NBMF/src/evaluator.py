@@ -15,11 +15,12 @@ from utilities import *
 ########################################################
 # Function to run the prediction approach at each density
 # 
-def execute(matrix, density, para):
+def execute(matrix, density, userRegion, serviceRegion, para):
     startTime = time.clock()
     numService = matrix.shape[1]
     numUser = matrix.shape[0]
     rounds = para['rounds']
+    debugMode = para['debugMode']
     logger.info('Data matrix size: %d users * %d services' % (numUser, numService))
     logger.info('Run the algorithm for %d rounds: matrix density = %.2f.' % (rounds, density))
 
@@ -44,7 +45,10 @@ def execute(matrix, density, para):
 
         # invocation to the prediction function
         iterStartTime = time.clock()  # to record the running time for one round
-        predictedMatrix = core.predict(trainMatrix, para)
+        predictedMatrix, loss = core.predict(trainMatrix, userRegion, serviceRegion, para)
+        if debugMode:
+            curve(loss, str(k) + "round")
+
         predictedMatrix[trainMatrix > 0] = trainMatrix[trainMatrix > 0]
         timeResults[k] = time.clock() - iterStartTime
 

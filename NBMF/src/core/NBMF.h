@@ -7,7 +7,9 @@
 
 /* Perform the core approach of NBMF */
 void NBMF(double *removedData, double *predData, int numUser, int numService, int dim,
-          double lmda, int maxIter, double etaInit, double *bu, double *bs, double *Udata, double *Sdata, bool debugMode);
+          double lmda, int maxIter, double etaInit,
+          double *bu, double *bs, double *Udata, double *Sdata,
+          double *userRegion, double *serviceRegion, double *lossData, bool debugMode);
 
 /* Compute the loss value of NBMF */
 double loss(double *bu, double *bs, double **U, double **S,
@@ -39,8 +41,10 @@ double dotProduct(double *vec1, double *vec2, int len);
 double **createMatrix(int row, int col);
 
 /* Free memory for a 2D array */
-void delete2DMatrix(double **ptr); 
+void delete2DMatrix(double **ptr);
 
-
+/* Compute the mean value between locals */
+void localMean(double **removedMatrix, int numUser, int numService,
+               double *userRegion, double *serviceRegion, double **meanMatrix);
 
 

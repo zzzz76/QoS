@@ -8,6 +8,7 @@
 #include <iostream>
 #include <cstring>
 #include <cmath>
+#include <unordered_map>
 #include "NBMF.h"
 
 using namespace std;
@@ -30,7 +31,9 @@ using namespace std;
  * 初始化的服务矩阵
 ********************************************************/
 void NBMF(double *removedData, double *predData, int numUser, int numService, int dim,
-          double lmda, int maxIter, double etaInit, double *bu, double *bs, double *Udata, double *Sdata, bool debugMode) {
+          double lmda, int maxIter, double etaInit,
+          double *bu, double *bs, double *Udata, double *Sdata,
+          double *userRegion, double *serviceRegion, double *lossData, bool debugMode) {
     // --- transfer the 1D pointer to 2D array pointer
     double **removedMatrix = vector2Matrix(removedData, numUser, numService);
     double **predMatrix = vector2Matrix(predData, numUser, numService);
@@ -94,6 +97,9 @@ void NBMF(double *removedData, double *predData, int numUser, int numService, in
             bs[j] -= eta * gradbs[j];
         }
         //cout << lossValue << endl;
+        if (debugMode) {
+            lossData[iter] = lossValue;
+        }
     }
 
     predict(true, miu, bu, bs, U, S, removedMatrix, predMatrix, numUser, numService, dim);
@@ -316,6 +322,47 @@ void delete2DMatrix(double **ptr) {
     delete ptr;
 }
 
+// the mean value between locals
+void localMean(double **removedMatrix, int numUser, int numService,
+                  double *userRegion, double *serviceRegion, double **meanMatrix) {
+    unordered_map<int, double> regionSum;
+    unordered_map<int, int> regionCount;
+    for (int i = 0; i < numUser; i++) {
+        for (int j = 0; j < numService; j++) {
+            if (removedMatrix[i][j] > eps) {
+                int ur = (int) userRegion[i];
+                int sr = (int) serviceRegion[j];
+                int key = ur * 100 + sr;
+                regionSum[key] += removedMatrix[i][j];
+                regionCount[key]++;
+            }
+        }
+    }
 
+    int cnt = 0;
+    double miu = 0;
+    for (int i = 0; i < numUser; i++) {
+        for (int j = 0; j < numService; j++) {
+            if (removedMatrix[i][j] > eps) {
+                miu += removedMatrix[i][j];
+                cnt++;
+            }
+        }
+    }
+    miu /= cnt;
+
+    for (int i = 0; i < numUser; i++) {
+        for (int j = 0; j < numService; j++) {
+            int ur = (int) userRegion[i];
+            int sr = (int) serviceRegion[j];
+            int key = ur * 100 + sr;
+            if (regionCount[key] > 0) {
+                meanMatrix[i][j] = regionSum[key] / regionCount[key];
+            } else {
+                meanMatrix[i][j] = miu;
+            }
+        }
+    }
+}
 
 

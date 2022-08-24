@@ -38,7 +38,7 @@ para = {'dataType': 'rt',  # set the dataType as 'rt' or 'tp'
         'maxIter': 300,  # the max iterations
         'saveTimeInfo': False,  # whether to keep track of the running time
         'saveLog': True,  # whether to save log into file
-        'debugMode': False,  # whether to record the debug info
+        'debugMode': True,  # whether to record the debug info
         'parallelMode': False  # whether to leverage multiprocessing for speedup
         }
 
@@ -62,12 +62,12 @@ def main():
     if para['parallelMode']:  # run on multiple processes
         pool = multiprocessing.Pool()
         for density in para['density']:
-            pool.apply_async(evaluator.execute, (dataMatrix, density, para))
+            pool.apply_async(evaluator.execute, (dataMatrix, density, userRegions, serviceRegions, para))
         pool.close()
         pool.join()
     else:  # run on single processes
         for density in para['density']:
-            evaluator.execute(dataMatrix, density, para)
+            evaluator.execute(dataMatrix, density, userRegions, serviceRegions, para)
 
     logger.info(time.strftime('All done. Total running time: %d-th day - %Hhour - %Mmin - %Ssec.',
                               time.gmtime(time.clock() - startTime)))
