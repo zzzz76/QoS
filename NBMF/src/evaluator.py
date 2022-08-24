@@ -49,7 +49,7 @@ def execute(matrix, density, userRegion, serviceRegion, para):
         if debugMode:
             curve(loss, str(k) + "round")
 
-        predictedMatrix[trainMatrix > 0] = trainMatrix[trainMatrix > 0]
+        # predictedMatrix[trainMatrix > 0] = trainMatrix[trainMatrix > 0]
         timeResults[k] = time.clock() - iterStartTime
 
         # calculate the prediction error
@@ -108,7 +108,7 @@ def removeEntries(matrix, density, seedID):
 #
 def errMetric(matrix, testMatrix, predMatrix, metrics):
     result = []
-    (testVecX, testVecY) = np.where(testMatrix)
+    (testVecX, testVecY) = np.where(testMatrix > 0)
     testVec = testMatrix[testVecX, testVecY]
     predVec = predMatrix[testVecX, testVecY]
     absError = np.absolute(predVec - testVec)

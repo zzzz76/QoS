@@ -36,7 +36,6 @@ def predict(removedMatrix, userRegion, serviceRegion, para):
     cdef bool debugMode = para['debugMode']
 
     # initialization
-
     cdef np.ndarray[double, ndim=2, mode='c'] predMatrix = np.zeros((numUser, numService))
     cdef np.ndarray[double, ndim=2, mode='c'] U = np.random.rand(numUser, dim)
     cdef np.ndarray[double, ndim=2, mode='c'] S = np.random.rand(numService, dim)
