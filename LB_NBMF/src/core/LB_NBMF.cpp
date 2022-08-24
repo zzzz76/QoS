@@ -15,6 +15,39 @@ using namespace std;
 
 #define eps 1e-10
 
+void getLocSim_core(double *geoData, double *locSimData, int numLine, double theta)
+{
+    // --- transfer the 1D pointer to 2D array pointer
+    double **geoAxis = vector2Matrix(geoData, numLine, 2);
+    double **locSim = vector2Matrix(locSimData, numLine, numLine);
+
+    // --- compute the location similarity
+    int i, j;
+    for (i = 0; i < numLine; i++) {
+        for (j = 0; j < numLine; j++) {
+            if (j > i) {
+
+                double axisX = geoAxis[i][0] - geoAxis[j][0];
+                double axisY = geoAxis[i][1] - geoAxis[j][1];
+                // the parameter 111261 is as defalt in the ref paper
+                double dist = 111261 * sqrt(axisX * axisX + axisY * axisY);
+                if (dist < theta) {
+                    double sim = 1 - 1.0 / (1 + exp(-dist));
+                    if (sim > 0) {
+                        locSim[i][j] = sim;
+                    }
+                }
+            }
+            else {
+                locSim[i][j] = locSim[j][i];
+            }
+        }
+    }
+
+    delete ((char*) geoAxis);
+    delete ((char*) locSim);
+}
+
 /********************************************************
 * Udata and Sdata are the output values
  * 训练集
@@ -30,11 +63,12 @@ using namespace std;
  * 初始化的用户矩阵
  * 初始化的服务矩阵
 ********************************************************/
-void LB_NBMF(double *removedData, double *predData, int numUser, int numService,
-          int dim, double lmda, int maxIter, double etaInit, double alpha,
+void LB_NBMF(double *locSimData, double *removedData, double *predData, int numUser, int numService,
+          int dim, double lmda, int maxIter, double etaInit, double alpha, double beta,
           double *bu, double *bs, double *Udata, double *Sdata,
           double *userRegion, double *serviceRegion, double *lossData, bool debugMode) {
     // --- transfer the 1D pointer to 2D array pointer
+    double **locSim = vector2Matrix(locSimData, numUser, numUser);
     double **removedMatrix = vector2Matrix(removedData, numUser, numService);
     double **predMatrix = vector2Matrix(predData, numUser, numService);
     double **U = vector2Matrix(Udata, numUser, dim);
@@ -57,16 +91,16 @@ void LB_NBMF(double *removedData, double *predData, int numUser, int numService,
         // update predict
         predict(false, meanMatrix, bu, bs, U, S, removedMatrix, predMatrix, numUser, numService, dim, alpha);
         // update loss value
-        lossValue = loss(bu, bs, U, S, removedMatrix, predMatrix, lmda, numUser, numService, dim);
+        lossValue = loss(bu, bs, U, S, locSim, removedMatrix, predMatrix, lmda, numUser, numService, dim, beta);
 
         // update gradients
-        gradLoss(bu, bs, U, S, removedMatrix, predMatrix,
-                 gradbu, gradbs, gradU, gradS, lmda, numUser, numService, dim, alpha);
+        gradLoss(bu, bs, U, S, locSim, removedMatrix, predMatrix,
+                 gradbu, gradbs, gradU, gradS, lmda, numUser, numService, dim, alpha, beta);
 
         // line search to find the best learning rate eta
-        double eta = linesearch(meanMatrix, bu, bs, U, S, removedMatrix, lossValue,
+        double eta = linesearch(meanMatrix, bu, bs, U, S, locSim, removedMatrix, lossValue,
                                 gradbu, gradbs, gradU, gradS,
-                                etaInit, lmda, numUser, numService, dim, alpha);
+                                etaInit, lmda, numUser, numService, dim, alpha, beta);
 
         // gradient descent updates
         for (k = 0; k < dim; k++) {
@@ -104,11 +138,13 @@ void LB_NBMF(double *removedData, double *predData, int numUser, int numService,
     delete ((char *) S);
     delete ((char *) removedMatrix);
     delete ((char *) predMatrix);
+    delete ((char *) locSim);
 }
 
 /* Compute the loss value of NBMF */
 double loss(double *bu, double *bs, double **U, double **S,
-            double **removedMatrix, double **predMatrix, double lmda, int numUser, int numService, int dim) {
+            double **locSim, double **removedMatrix, double **predMatrix,
+            double lmda, int numUser, int numService, int dim, double beta) {
     int i, j, k, g;
     double loss = 0;
 
@@ -138,14 +174,24 @@ double loss(double *bu, double *bs, double **U, double **S,
         loss += 0.5 * lmda * bs[j] * bs[j];
     }
 
+    // Location regularization
+    for (i = 0; i < numUser; i++) {
+        for (g = 0; g < numUser; g++) {
+            if (locSim[i][g] > 0) {
+                double tmp = bu[i] - bu[g];
+                loss += 0.5 * beta * locSim[i][g] * tmp * tmp;
+            }
+        }
+    }
+
     return loss;
 }
 
 
 void gradLoss(double *bu, double *bs, double **U, double **S,
-              double **removedMatrix, double **predMatrix,
+              double **locSim, double **removedMatrix, double **predMatrix,
               double *gradbu, double *gradbs, double **gradU, double **gradS,
-              double lmda, int numUser, int numService, int dim, double alpha) {
+              double lmda, int numUser, int numService, int dim, double alpha, double beta) {
     int i, j, k, g;
     double grad = 0;
 
@@ -188,6 +234,12 @@ void gradLoss(double *bu, double *bs, double **U, double **S,
             }
         }
         grad = -grad + lmda * bu[i];
+        //todo
+        for (g = 0; g < numUser; g++) {
+            if (locSim[i][g] > 0) {
+                grad += alpha * locSim[i][g] * (bu[i] - bu[g]);
+            }
+        }
         gradbu[i] = grad;
     }
 
@@ -207,9 +259,9 @@ void gradLoss(double *bu, double *bs, double **U, double **S,
 
 
 double linesearch(double **meanMatrix, double *bu, double *bs, double **U, double **S,
-                  double **removedMatrix, double lastLossValue,
+                  double **locSim, double **removedMatrix, double lastLossValue,
                   double *gradbu, double *gradbs, double **gradU, double **gradS,
-                  double etaInit, double lmda, int numUser, int numService, int dim, double alpha) {
+                  double etaInit, double lmda, int numUser, int numService, int dim, double alpha, double beta) {
     double eta = etaInit;
     double lossValue;
     double *bu1 = new double[numUser];
@@ -241,7 +293,7 @@ double linesearch(double **meanMatrix, double *bu, double *bs, double **U, doubl
         }
 
         predict(false, meanMatrix, bu1, bs1, U1, S1, removedMatrix, predMatrix1, numUser, numService, dim, alpha);
-        lossValue = loss(bu1, bs1, U1, S1, removedMatrix, predMatrix1, lmda, numUser, numService, dim);
+        lossValue = loss(bu1, bs1, U1, S1, locSim, removedMatrix, predMatrix1, lmda, numUser, numService, dim, beta);
 
         if (lossValue <= lastLossValue)
             break;

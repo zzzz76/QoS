@@ -9,6 +9,7 @@
 import numpy as np
 import os, sys, time
 import multiprocessing
+import core
 
 sys.path.append('src')
 # Build external model
@@ -29,12 +30,14 @@ para = {'dataType': 'rt',  # set the dataType as 'rt' or 'tp'
         'outPath': 'result/',
         'metrics': ['MAE', 'NMAE', 'RMSE', 'MRE', 'NPRE',
                     ('NDCG', [1, 5, 10, 20, 50, 100])],  # delete where appropriate
-        'density': list(np.arange(0.05, 0.06, 0.05)),  # matrix density
+        'density': list(np.arange(0.1, 0.11, 0.05)),  # matrix density
         'rounds': 1,  # how many runs are performed at each matrix density
         'dimension': 10,  # dimenisionality of the latent factors
         'etaInit': 0.01,  # inital learning rate. We use line search
         # to find the best eta at each iteration
         'lambda': 20,  # regularization parameter
+        'beta': 15, # the parameter of location regularization
+        'theta': 100, # the distance threshold to control the neighborhood size
         'maxIter': 300,  # the max iterations
         'alpha': 0.2,
         'saveTimeInfo': False,  # whether to keep track of the running time
@@ -55,6 +58,9 @@ def main():
     dataMatrix = dataloader.load(para)
     logger.info('Loading data done.')
 
+    # get the location similarity between users
+    locSim = core.getLocSim(para)
+
     # load user information and service information
     userRegions = dataloader.loadUserList(para)
     serviceRegions = dataloader.loadServiceList(para)
@@ -63,12 +69,12 @@ def main():
     if para['parallelMode']:  # run on multiple processes
         pool = multiprocessing.Pool()
         for density in para['density']:
-            pool.apply_async(evaluator.execute, (dataMatrix, density, userRegions, serviceRegions, para))
+            pool.apply_async(evaluator.execute, (dataMatrix, density, userRegions, serviceRegions, locSim, para))
         pool.close()
         pool.join()
     else:  # run on single processes
         for density in para['density']:
-            evaluator.execute(dataMatrix, density, userRegions, serviceRegions, para)
+            evaluator.execute(dataMatrix, density, userRegions, serviceRegions, locSim, para)
 
     logger.info(time.strftime('All done. Total running time: %d-th day - %Hhour - %Mmin - %Ssec.',
                               time.gmtime(time.clock() - startTime)))

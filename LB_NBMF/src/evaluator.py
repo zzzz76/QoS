@@ -15,7 +15,7 @@ from utilities import *
 ########################################################
 # Function to run the prediction approach at each density
 # 
-def execute(matrix, density, userRegion, serviceRegion, para):
+def execute(matrix, density, userRegion, serviceRegion, locSim, para):
     startTime = time.clock()
     numService = matrix.shape[1]
     numUser = matrix.shape[0]
@@ -45,7 +45,7 @@ def execute(matrix, density, userRegion, serviceRegion, para):
 
         # invocation to the prediction function
         iterStartTime = time.clock()  # to record the running time for one round
-        predictedMatrix, loss = core.predict(trainMatrix, userRegion, serviceRegion, para)
+        predictedMatrix, loss = core.predict(trainMatrix, userRegion, serviceRegion, locSim, para)
         if debugMode:
             curve(loss, str(k) + "round")
 
