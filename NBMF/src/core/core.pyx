@@ -15,7 +15,7 @@ from libcpp cimport bool
 #
 cdef extern from "NBMF.h":
     void NBMF(double *removedData, double *predData, int numUser, int numService,
-              int dim, double lmda, int maxIter, double etaInit,
+              int dim, double lmda, int maxIter, double etaInit, double alpha,
               double *bu, double *bs, double *Udata, double *Sdata,
               double *userRegion, double *serviceRegion, double *lossData, bool debugMode)
 #########################################################
@@ -32,6 +32,7 @@ def predict(removedMatrix, userRegion, serviceRegion, para):
     cdef double lmda = para['lambda']
     cdef int maxIter = para['maxIter']
     cdef double etaInit = para['etaInit']
+    cdef double alpha = para['alpha']
     cdef bool debugMode = para['debugMode']
 
     # initialization
@@ -55,6 +56,7 @@ def predict(removedMatrix, userRegion, serviceRegion, para):
         lmda,
         maxIter,
         etaInit,
+        alpha,
         <double *> bu.data,
         <double *> bs.data,
         <double *> U.data,

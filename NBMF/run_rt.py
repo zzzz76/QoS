@@ -36,6 +36,7 @@ para = {'dataType': 'rt',  # set the dataType as 'rt' or 'tp'
         # to find the best eta at each iteration
         'lambda': 20,  # regularization parameter
         'maxIter': 300,  # the max iterations
+        'alpha': 0.5,
         'saveTimeInfo': False,  # whether to keep track of the running time
         'saveLog': True,  # whether to save log into file
         'debugMode': True,  # whether to record the debug info

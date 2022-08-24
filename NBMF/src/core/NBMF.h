@@ -6,8 +6,8 @@
 
 
 /* Perform the core approach of NBMF */
-void NBMF(double *removedData, double *predData, int numUser, int numService, int dim,
-          double lmda, int maxIter, double etaInit,
+void NBMF(double *removedData, double *predData, int numUser, int numService,
+          int dim, double lmda, int maxIter, double etaInit, double alpha,
           double *bu, double *bs, double *Udata, double *Sdata,
           double *userRegion, double *serviceRegion, double *lossData, bool debugMode);
 
@@ -19,17 +19,17 @@ double loss(double *bu, double *bs, double **U, double **S,
 void gradLoss(double *bu, double *bs, double **U, double **S,
               double **removedMatrix, double **predMatrix,
               double *gradbu, double *gradbs, double **gradU, double **gradS,
-              double lmda, int numUser, int numService, int dim);
+              double lmda, int numUser, int numService, int dim, double alpha);
 
 /* Perform line search to find the best learning rate */
-double linesearch(double miu, double *bu, double *bs, double **U, double **S,
+double linesearch(double **meanMatrix, double *bu, double *bs, double **U, double **S,
                   double **removedMatrix, double lastLossValue,
                   double *gradbu, double *gradbs, double **gradU, double **gradS,
-                  double etaInit, double lmda, int numUser, int numService, int dim);
+                  double etaInit, double lmda, int numUser, int numService, int dim, double alpha);
 
 /* Compute predMatrix */
-void predict(bool flag, double miu, double *bu, double *bs, double **U, double **S,
-             double **removedMatrix, double **predMatrix, int numUser, int numService, int dim);
+void predict(bool flag, double **meanMatrix, double *bu, double *bs, double **U, double **S,
+             double **removedMatrix, double **predMatrix, int numUser, int numService, int dim, double alpha);
 
 /* Transform a vector into a matrix */
 double **vector2Matrix(double *vector, int row, int col);
