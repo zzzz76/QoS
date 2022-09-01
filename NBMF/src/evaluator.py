@@ -58,7 +58,7 @@ def execute(matrix, density, userRegion, serviceRegion, para):
         logger.info('%d-round done. Running time: %.2f sec' % (k + 1, timeResults[k]))
         logger.info('----------------------------------------------')
 
-    outFile = '%s%sResult_%.2f.txt' % (para['outPath'], para['dataType'], density)
+    outFile = '%s%sResult_%.2f_%d.txt' % (para['outPath'], para['dataType'], density, para['lambda'])
     saveResult(outFile, evalResults, timeResults, para)
     logger.info('Config density = %.2f done. Running time: %.2f sec'
                 % (density, time.clock() - startTime))

@@ -15,7 +15,7 @@ from utilities import *
 ########################################################
 # Function to run the prediction approach at each density
 # 
-def execute(matrix, density, userRegion, serviceRegion, locSim, para):
+def execute(matrix, density, userRegion, serviceRegion, para):
     startTime = time.clock()
     numService = matrix.shape[1]
     numUser = matrix.shape[0]
@@ -35,7 +35,7 @@ def execute(matrix, density, userRegion, serviceRegion, locSim, para):
 
     for k in range(rounds):
         logger.info('----------------------------------------------')
-        logger.info('%d-round starts.' % (k + 1))
+        logger.info('%d-round starts.' % (k))
         logger.info('----------------------------------------------')
 
         # remove the entries of data matrix to generate trainMatrix and testMatrix
@@ -45,7 +45,7 @@ def execute(matrix, density, userRegion, serviceRegion, locSim, para):
 
         # invocation to the prediction function
         iterStartTime = time.clock()  # to record the running time for one round
-        predictedMatrix, loss = core.predict(trainMatrix, userRegion, serviceRegion, locSim, para)
+        predictedMatrix, loss = core.predict(trainMatrix, trainMatrix.T, userRegion, serviceRegion, para)
         if debugMode:
             curve(loss, str(k) + "round")
 
@@ -58,7 +58,7 @@ def execute(matrix, density, userRegion, serviceRegion, locSim, para):
         logger.info('%d-round done. Running time: %.2f sec' % (k + 1, timeResults[k]))
         logger.info('----------------------------------------------')
 
-    outFile = '%s%sResult_%.2f.txt' % (para['outPath'], para['dataType'], density)
+    outFile = '%s%sResult_%.2f_%.1f.txt' % (para['outPath'], para['dataType'], density, para['alpha'])
     saveResult(outFile, evalResults, timeResults, para)
     logger.info('Config density = %.2f done. Running time: %.2f sec'
                 % (density, time.clock() - startTime))

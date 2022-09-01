@@ -1,0 +1,6 @@
+[User ID]	[IP Address]	[Country]	[IP No.]	[AS]	[Latitude]	[Longitude]
+=================================================================================						
+0	128.10.19.52	United States	2148143924	AS17 Purdue University	40.4249	-86.9162
+1	128.10.19.53	United States	2148143925	AS17 Purdue University	40.4249	-86.9162
+2	128.111.52.61	United States	2154771517	AS131 University of California, Santa Barbara	34.4329	-119.8371
+3	128.111.52.63	United States	2154771519	AS131 University of California, Santa Barbara	34.4329	-119.8371

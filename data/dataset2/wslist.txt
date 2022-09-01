@@ -1,0 +1,6 @@
+[Service ID]	[WSDL Address]	[Service Provider]	[IP Address]	[Country]	[IP No.]	[AS]	[Latitude]	[Longitude]
+=================================================================================
+0	http://ewave.no-ip.com/ECallws/StadiumData.asmx?WSDL	no-ip.com	8.23.224.110	United States	135782510	AS3356 Level 3 Communications	38	-97
+1	http://ewave.no-ip.com/ECallws/BuyerData.asmx?WSDL	no-ip.com	8.23.224.110	United States	135782510	AS3356  Level 3 Communications	38	-97
+2	http://www.enterpriseconnect.gov.au/_vti_bin/BusinessDataCatalog.asmx?wsdl	enterpriseconnect.gov.au	210.193.179.225	Australia	3535909857	AS17477 Macquarie Telecom	-27	133
+3	http://www.enterpriseconnect.gov.au/_vti_bin/People.asmx?wsdl	enterpriseconnect.gov.au	210.193.179.225	Australia	3535909857	AS17477 Macquarie Telecom	-27	133

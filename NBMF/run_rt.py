@@ -29,12 +29,12 @@ para = {'dataType': 'rt',  # set the dataType as 'rt' or 'tp'
         'outPath': 'result/',
         'metrics': ['MAE', 'NMAE', 'RMSE', 'MRE', 'NPRE',
                     ('NDCG', [1, 5, 10, 20, 50, 100])],  # delete where appropriate
-        'density': list(np.arange(0.05, 0.21, 0.05)),  # matrix density
+        'density': list(np.arange(0.01, 0.02, 0.05)),  # matrix density
         'rounds': 8,  # how many runs are performed at each matrix density
         'dimension': 10,  # dimenisionality of the latent factors
         'etaInit': 0.01,  # inital learning rate. We use line search
         # to find the best eta at each iteration
-        'lambda': 20,  # regularization parameter
+        'lambda': 8,  # regularization parameter
         'maxIter': 300,  # the max iterations
         'alpha': 0.2,
         'saveTimeInfo': False,  # whether to keep track of the running time

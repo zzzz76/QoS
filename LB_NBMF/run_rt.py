@@ -31,15 +31,17 @@ para = {'dataType': 'rt',  # set the dataType as 'rt' or 'tp'
         'metrics': ['MAE', 'NMAE', 'RMSE', 'MRE', 'NPRE',
                     ('NDCG', [1, 5, 10, 20, 50, 100])],  # delete where appropriate
         'density': list(np.arange(0.1, 0.11, 0.05)),  # matrix density
-        'rounds': 1,  # how many runs are performed at each matrix density
+        'rounds': 8,  # how many runs are performed at each matrix density
         'dimension': 10,  # dimenisionality of the latent factors
         'etaInit': 0.01,  # inital learning rate. We use line search
         # to find the best eta at each iteration
-        'lambda': 20,  # regularization parameter
-        'beta': 15, # the parameter of location regularization
-        'theta': 100, # the distance threshold to control the neighborhood size
+        'lambda': 17,  # regularization parameter
+        'beta': 17, # the parameter of location regularization
+        'theta': 200, # the distance threshold to control the neighborhood size
         'maxIter': 300,  # the max iterations
         'alpha': 0.2,
+        'topU': 5,
+        'topS': 10,
         'saveTimeInfo': False,  # whether to keep track of the running time
         'saveLog': False,  # whether to save log into file
         'debugMode': False,  # whether to record the debug info
@@ -58,9 +60,6 @@ def main():
     dataMatrix = dataloader.load(para)
     logger.info('Loading data done.')
 
-    # get the location similarity between users
-    locSim = core.getLocSim(para)
-
     # load user information and service information
     userRegions = dataloader.loadUserList(para)
     serviceRegions = dataloader.loadServiceList(para)
@@ -69,12 +68,15 @@ def main():
     if para['parallelMode']:  # run on multiple processes
         pool = multiprocessing.Pool()
         for density in para['density']:
-            pool.apply_async(evaluator.execute, (dataMatrix, density, userRegions, serviceRegions, locSim, para))
+            pool.apply_async(evaluator.execute, (dataMatrix, density, userRegions, serviceRegions, para))
         pool.close()
         pool.join()
     else:  # run on single processes
         for density in para['density']:
-            evaluator.execute(dataMatrix, density, userRegions, serviceRegions, locSim, para)
+            for it in []:
+                para['lambda'] = it
+                para['beta'] = it
+                evaluator.execute(dataMatrix, density, userRegions, serviceRegions, para)
 
     logger.info(time.strftime('All done. Total running time: %d-th day - %Hhour - %Mmin - %Ssec.',
                               time.gmtime(time.clock() - startTime)))

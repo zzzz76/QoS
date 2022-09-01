@@ -14,12 +14,10 @@ from libcpp cimport bool
 # Make declarations on functions from cpp file
 #
 cdef extern from "LB_NBMF.h":
-    void getLocSim_core(double *geoData, double *locSimData,
-        int numLine, double theta)
-    void LB_NBMF(double *locSimData, double *removedData, double *predData, int numUser, int numService,
-          int dim, double lmda, int maxIter, double etaInit, double alpha, double beta,
-          double *bu, double *bs, double *Udata, double *Sdata,
-          double *userRegion, double *serviceRegion, double *lossData, bool debugMode)
+    void LB_NBMF(double *removedData, double *removedDataT, double *predData, int numUser, int numService,
+             int dim, double lmda, int maxIter, double etaInit, double alpha, double beta, double topU, double topS,
+             double *bu, double *bs, double *Udata, double *Sdata,
+             double *userRegion, double *serviceRegion, double *lossData, bool debugMode)
 #########################################################
 
 
@@ -27,7 +25,7 @@ cdef extern from "LB_NBMF.h":
 # Function to perform the prediction algorithm
 # Wrap up the C++ implementation
 #
-def predict(removedMatrix, userRegion, serviceRegion, locSim, para):
+def predict(removedMatrix, removedMatrixT, userRegion, serviceRegion, para):
     cdef int numService = removedMatrix.shape[1]
     cdef int numUser = removedMatrix.shape[0]
     cdef int dim = para['dimension']
@@ -37,6 +35,8 @@ def predict(removedMatrix, userRegion, serviceRegion, locSim, para):
     cdef double alpha = para['alpha']
     cdef double beta = para['beta']
     cdef bool debugMode = para['debugMode']
+    cdef int topU = para['topU']
+    cdef int topS = para['topS']
 
     # initialization
     cdef np.ndarray[double, ndim=2, mode='c'] predMatrix = np.zeros((numUser, numService))
@@ -50,8 +50,8 @@ def predict(removedMatrix, userRegion, serviceRegion, locSim, para):
 
     # Wrap up PMF.cpp
     LB_NBMF(
-        <double *> (<np.ndarray[double, ndim=2, mode='c']> locSim).data,
         <double *> (<np.ndarray[double, ndim=2, mode='c']> removedMatrix).data,
+        <double *> (<np.ndarray[double, ndim=2, mode='c']> removedMatrixT).data,
         <double *> predMatrix.data,
         numUser,
         numService,
@@ -61,6 +61,8 @@ def predict(removedMatrix, userRegion, serviceRegion, locSim, para):
         etaInit,
         alpha,
         beta,
+        topU,
+        topS,
         <double *> bu.data,
         <double *> bs.data,
         <double *> U.data,
@@ -72,32 +74,4 @@ def predict(removedMatrix, userRegion, serviceRegion, locSim, para):
     )
 
     return predMatrix, loss
-#########################################################
-
-
-#########################################################
-# Function to compute the location similarity
-#
-def getLocSim(para):
-    logger.info('Computing location similarity...')
-    userLocFile = para['dataPath'] + 'userlist.txt'
-    data = np.genfromtxt(userLocFile, comments='$', delimiter='\t',
-        skip_header=2)
-    geoAxis = data[:, 5:7] # columns of geo axis
-    geoAxis[np.isnan(geoAxis)] = 999999 #unavailable geo data
-    geoAxis = geoAxis.copy() # keep memory consist into C++
-
-    cdef double theta = para['theta']
-    cdef int numLine = geoAxis.shape[0]
-    cdef np.ndarray[double, ndim=2, mode='c'] locSim \
-        = np.zeros((numLine, numLine), dtype=np.float64)
-
-    getLocSim_core(
-        <double *> (<np.ndarray[double, ndim=2, mode='c']> geoAxis).data,
-        <double *> locSim.data,
-        numLine,
-        theta
-        )
-
-    return locSim
 #########################################################
