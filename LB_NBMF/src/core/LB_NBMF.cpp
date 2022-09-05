@@ -165,17 +165,17 @@ double loss(double *bu, double *bs, double **U, double **S,
     }
 
     // Service regularization
-    for (j = 0; j < numService; j++) {
-        for (k = 0; k < dim; k++) {
-            double sum = 0;
-            for (g = 0; g < pccServiceMatrix[j].size(); g++) {
-                int id = pccServiceMatrix[j][g].first;
-                sum += pccServiceMatrix[j][g].second * S[id][k];
-            }
-            double tmp = S[j][k] - sum;
-            loss += 0.5 * beta * tmp * tmp;
-        }
-    }
+//    for (j = 0; j < numService; j++) {
+//        for (k = 0; k < dim; k++) {
+//            double sum = 0;
+//            for (g = 0; g < pccServiceMatrix[j].size(); g++) {
+//                int id = pccServiceMatrix[j][g].first;
+//                sum += pccServiceMatrix[j][g].second * S[id][k];
+//            }
+//            double tmp = S[j][k] - sum;
+//            loss += 0.5 * beta * tmp * tmp;
+//        }
+//    }
 
     return loss;
 }
@@ -226,12 +226,12 @@ void gradLoss(double *bu, double *bs, double **U, double **S,
             grad += lmda * S[j][k];
 
             //
-            double sum = 0;
-            for (g = 0; g < pccServiceMatrix[j].size(); g++) {
-                int id = pccServiceMatrix[j][g].first;
-                sum += pccServiceMatrix[j][g].second * S[id][k];
-            }
-            grad += beta * (S[j][k] - sum);
+//            double sum = 0;
+//            for (g = 0; g < pccServiceMatrix[j].size(); g++) {
+//                int id = pccServiceMatrix[j][g].first;
+//                sum += pccServiceMatrix[j][g].second * S[id][k];
+//            }
+//            grad += beta * (S[j][k] - sum);
 
             gradS[j][k] = grad;
         }

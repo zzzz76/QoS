@@ -27,7 +27,7 @@ import dataloader
 #
 para = {'dataType': 'rt',  # set the dataType as 'rt' or 'tp'
         'dataPath': '../data/dataset1/',
-        'outPath': 'result/topk/',
+        'outPath': 'result/topS/',
         'metrics': ['MAE', 'NMAE', 'RMSE', 'MRE', 'NPRE',
                     ('NDCG', [1, 5, 10, 20, 50, 100])],  # delete where appropriate
         'density': list(np.arange(0.15, 0.16, 0.05)),  # matrix density
@@ -35,8 +35,8 @@ para = {'dataType': 'rt',  # set the dataType as 'rt' or 'tp'
         'dimension': 10,  # dimenisionality of the latent factors
         'etaInit': 0.01,  # inital learning rate. We use line search
         # to find the best eta at each iteration
-        'lambda': 22,  # regularization parameter
-        'beta': 20, # the parameter of location regularization
+        'lambda': 20,  # regularization parameter
+        'beta': 40, # the parameter of location regularization
         'theta': 200, # the distance threshold to control the neighborhood size
         'maxIter': 300,  # the max iterations
         'alpha': 0.2,
@@ -73,10 +73,10 @@ def main():
         pool.join()
     else:  # run on single processes
         for density in para['density']:
-            for bt in [0, 5, 10, 20, 40, 80]:
+            for it in [0, 2, 5, 10, 20, 40, 80, 160]:
                 params = para
-                params['topS'] = bt
-                evaluator.execute(dataMatrix, density, userRegions, serviceRegions, para)
+                params['topS'] = it
+                evaluator.execute(dataMatrix, density, userRegions, serviceRegions, params)
 
     logger.info(time.strftime('All done. Total running time: %d-th day - %Hhour - %Mmin - %Ssec.',
                               time.gmtime(time.clock() - startTime)))

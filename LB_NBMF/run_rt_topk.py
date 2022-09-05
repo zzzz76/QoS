@@ -27,21 +27,21 @@ import dataloader
 #
 para = {'dataType': 'rt',  # set the dataType as 'rt' or 'tp'
         'dataPath': '../data/dataset1/',
-        'outPath': 'result/topS/',
+        'outPath': 'result/topT/',
         'metrics': ['MAE', 'NMAE', 'RMSE', 'MRE', 'NPRE',
                     ('NDCG', [1, 5, 10, 20, 50, 100])],  # delete where appropriate
         'density': list(np.arange(0.05, 0.06, 0.05)),  # matrix density
-        'rounds': 8,  # how many runs are performed at each matrix density
+        'rounds': 1,  # how many runs are performed at each matrix density
         'dimension': 10,  # dimenisionality of the latent factors
         'etaInit': 0.01,  # inital learning rate. We use line search
         # to find the best eta at each iteration
-        'lambda': 18,  # regularization parameter
-        'beta': 20, # the parameter of location regularization
+        'lambda': 13,  # regularization parameter
+        'beta': 40, # the parameter of location regularization
         'theta': 200, # the distance threshold to control the neighborhood size
         'maxIter': 300,  # the max iterations
         'alpha': 0.2,
         'topU': 5,
-        'topS': 5,
+        'topS': 10,
         'saveTimeInfo': False,  # whether to keep track of the running time
         'saveLog': False,  # whether to save log into file
         'debugMode': False,  # whether to record the debug info
@@ -73,10 +73,10 @@ def main():
         pool.join()
     else:  # run on single processes
         for density in para['density']:
-            for bt in [0, 5, 10, 20, 40, 80]:
+            for it in [0, 2, 5]:
                 params = para
-                params['topS'] = bt
-                evaluator.execute(dataMatrix, density, userRegions, serviceRegions, para)
+                params['topU'] = it
+                evaluator.execute(dataMatrix, density, userRegions, serviceRegions, params)
 
     logger.info(time.strftime('All done. Total running time: %d-th day - %Hhour - %Mmin - %Ssec.',
                               time.gmtime(time.clock() - startTime)))
